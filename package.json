@@ -1,0 +1,24 @@
+{
+  "name": "eloquent-node-app",
+  "version": "1.0.0",
+  "description": "Node app from eloquent js",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sminutoli/eloquent-node-app.git"
+  },
+  "author": "sminutoli",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sminutoli/eloquent-node-app/issues"
+  },
+  "homepage": "https://github.com/sminutoli/eloquent-node-app#readme",
+  "dependencies": {
+    "ecstatic": "^2.1.0",
+    "nodemon": "^1.11.0"
+  }
+}

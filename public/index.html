@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    form input,
+    form textarea,
+    form button {
+      display: block;
+      margin-bottom: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hola Node</h1>
+
+  <form action="" name="addTalk">
+    <input type="text" name="title" placeholder="title">
+    <input type="text" name="presenter" placeholder="presenter">
+    <textarea name="summary" id="" cols="30" rows="10" placeholder="summary"></textarea>
+    <button>Agregar charla</button>
+  </form>
+
+  <hr>
+
+  <form action="talks/leo" name="addComment">
+    <input type="text" name="author" placeholder="author">
+    <textarea name="message" id="" cols="30" rows="10" placeholder="message"></textarea>
+    <button>Agregar comment a leo</button>
+  </form>
+
+  <script>
+    const addTalkForm = document.querySelector('[name=addTalk]');
+    addTalkForm.addEventListener('submit', addTalk);
+
+    function addTalk(event){
+      event.preventDefault();
+      const { title: { value: title }, presenter: { value: presenter }, summary: { value: summary } } = event.target;
+      console.log(title, presenter, summary);
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener('load', () => event.target.reset());
+      xhr.open('PUT', `/talks/${title}`);
+      xhr.setRequestHeader('Content-type', 'application/json');
+      xhr.send(JSON.stringify({
+        presenter,
+        summary
+      }));
+    }
+
+    const addCommentForm = document.querySelector('[name=addComment]');
+    addCommentForm.addEventListener('submit', addComment);
+
+    function addComment(event){
+      event.preventDefault();
+      const { author: { value: author }, message: { value: message } } = event.target;
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener('load', () => event.target.reset());
+      xhr.open('POST', `/talks/leo`);
+      xhr.setRequestHeader('Content-type', 'application/json');
+      xhr.send(JSON.stringify({
+        author,
+        message
+      }));
+    }
+  </script>
+</body>
+</html>
