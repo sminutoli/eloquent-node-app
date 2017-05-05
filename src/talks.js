@@ -1,6 +1,7 @@
 //ours
 const { respond, respondJSON } = require('./respond');
 const readStreamAsJSON = require('./streamAsJson');
+const trace = require('./trace');
 
 const talks = {
   __proto__: null,
@@ -11,6 +12,7 @@ const talks = {
   }
 };
 
+const talksMatcher = /^\/talks$/;
 const talkMatcher = /^\/talks\/([^\/]+)$/;
 
 const deleteTalk = title => {
@@ -79,16 +81,54 @@ const doPost = (request, response, title) => {
     registerChange(title);
     return aComment;
   };
-  const trace = message => value => console.log(message, value) || value;
   readStreamAsJSON.read(request)
     .then(validateComment)
     .catch(respondError)
     .then(storeComment)
     .then(respondOk)
     .catch(respondNotFound);    
-}
+};
+
+const sendTalks = (talks, response) => respondJSON(response, 200, {
+  serverTime: Date.now(),
+  talks
+});
+
+const waiting = [];
+
+const waitForChanges = (since, response) => {
+  const waiter = { since, response };
+  const isStillWaiting = () => waiting.indexOf(waiter) > -1;
+  const removeWaiter = () => waiting.splice(waiting.indexOf(waiter), 1);
+  const sendEmptyResponse = () => sendTalks([], response);
+  waiting.push(waiter);
+  setTimeout( () => isStillWaiting()
+    ? removeWaiter() && sendEmptyResponse()
+    : null
+  , 90 * 1000);
+};
+
+const doGetAll = (request, response) => {
+  var query = require('url').parse(request.url, true).query;
+  if (query.changesSince == null) {
+    const list = Object.keys(talks).map( title => talks[title] );
+    sendTalks(list, response);
+  } else {
+    const since = Number(query.changesSince);
+    if (isNaN(since)) {
+      respond(response, 400, "Invalid parameter");
+    } else {
+      const changed = getChangedTalks(since);
+      if (changed.length > 0)
+         sendTalks(changed, response);
+      else
+        waitForChanges(since, response);
+    }
+  }
+};
 
 const configureRouter = router => {
+  router.add('GET', talksMatcher, doGetAll);
   router.add('GET', talkMatcher, doGet);
   router.add('DELETE', talkMatcher, doDelete);
   router.add('PUT', talkMatcher, doPut);
