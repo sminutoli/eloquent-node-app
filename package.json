@@ -20,5 +20,15 @@
   "dependencies": {
     "ecstatic": "^2.1.0",
     "nodemon": "^1.11.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "es6": true
+    }
   }
 }
