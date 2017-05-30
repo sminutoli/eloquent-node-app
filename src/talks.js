@@ -36,8 +36,6 @@ const validateComment = aComment => {
   return aComment;
 };
 
-const registerChange = Function.prototype;
-
 const doGet = (request, response, title) => {
   return title in talks 
     ? respondJSON(response, 200, talks[title]) 
@@ -106,6 +104,33 @@ const waitForChanges = (since, response) => {
     ? removeWaiter() && sendEmptyResponse()
     : null
   , 90 * 1000);
+};
+
+const sendWaiter = waiter => sendTalks(getChangedTalks(waiter.since), waiter.response);
+
+const changes = [];
+const registerChange = title => {
+  changes.push({title: title, time: Date.now()});
+  waiting.forEach(sendWaiter);
+  waiting = [];
+};
+
+const last = iterable => iterable[iterable.length - 1];
+
+const getChangedTalks = since => {
+  const alreadySeen = change => found.some(talk => talk.title == change.title);
+  const notSeen = change => !alreadySeen(change);
+  const lastChange = last(changes);
+  const withTimeGreaterThanMoment = change => change.time > since;
+  const changesAfterMoment = withTimeGreaterThanMoment(lastChange) ? changes : [];
+  const fromLastToFirst = Array.from(changesAfterMoment).reverse();
+  const getTalkByTitle = title => talks[title];
+  const extracTitle = change => change.title;
+  const toTalkOrDeleted = title => getTalkByTitle(title) || {title, deleted: true};
+  return fromLastToFirst
+          .filter(notSeen)
+          .map(extractTitle)
+          .map(toTalkOrDeleted)
 };
 
 const doGetAll = (request, response) => {

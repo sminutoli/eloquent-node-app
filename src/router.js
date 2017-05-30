@@ -1,5 +1,4 @@
-
-const url = require("url");
+const url = require('url');
 
 const Router = {
   routes: [],
